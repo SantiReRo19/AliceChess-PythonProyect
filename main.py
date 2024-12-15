@@ -1,7 +1,4 @@
-from juego import Juego
-
-
+import menu
 
 if __name__ == "__main__":
-    juego = Juego()
-    juego.ejecutar()    
+    menu.main_menu()
