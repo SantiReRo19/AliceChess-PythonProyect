@@ -26,8 +26,20 @@ class Juego:
         self.pantalla = pygame.display.set_mode((self.ANCHO, self.ALTO))
         pygame.display.set_caption('Ajedrez Alice')
 
+        self.boton_menu = pygame.image.load("imagenes/menuIcon.png")
+        self.boton_menu = pygame.transform.scale(self.boton_menu, (int(30 * self.modificador_tamano), int(30 * self.modificador_tamano)))
+        self.boton_menu = pygame.transform.scale(self.boton_menu, (30, 30))  # Ajustar tamaño del botón
+
         self.tablero = Tablero()
         self.cargar_imagenes()
+        
+
+        # Inicialización del sonido
+        pygame.mixer.init()
+        pygame.mixer.music.load(self.configuracion["cancion"])
+        pygame.mixer.music.set_volume(self.configuracion["volumen"])
+        pygame.mixer.music.play(loops=-1)
+        self.moverFicha_Sound = pygame.mixer.Sound("sonidos/moverFicha.wav")
 
         # Si player_color no se especifica, default a blancas
         if player_color is None:
@@ -35,16 +47,6 @@ class Juego:
         
         # Establecer color de la máquina al color opuesto
         self.maquina = MinMax(Color.BLANCO if player_color == Color.NEGRO else Color.NEGRO)
-
-        self.boton_menu = pygame.image.load("imagenes/menuIcon.png")
-        self.boton_menu = pygame.transform.scale(self.boton_menu, (int(30 * self.modificador_tamano), int(30 * self.modificador_tamano)))  # Ajustar tamaño del botón
-
-        # Inicialización del sonido
-        pygame.mixer.init()
-        self.moverFicha_Sound = pygame.mixer.Sound("sonidos/moverFicha.wav")  # Asegúrate de que el archivo exista
-        pygame.mixer.music.load("sonidos/musicaFondo.mp3")
-        pygame.mixer.music.set_volume(1.5)
-        pygame.mixer.music.play(loops=-1)
 
         # Variables para el manejo de movimientos
         self.pieza_seleccionada = None
@@ -75,121 +77,8 @@ class Juego:
         self.piezas_capturadas_blancas = []
         self.piezas_capturadas_negras = []
         self.ultimo_movimiento = None 
-        self.boton_menu = pygame.transform.scale(self.boton_menu, (30, 30))  # Ajustar tamaño del botón
-
-        # Inicialización del sonido
-        pygame.mixer.init()
-
-        pygame.mixer.music.load(self.configuracion["cancion"])
-        pygame.mixer.music.set_volume(self.configuracion["volumen"])
-        pygame.mixer.music.play(loops=-1)
-
-        # Variables para el manejo de movimientos
-        self.pieza_seleccionada = None
-        self.tablero_seleccionado = None
-
-        # Establecer turno inicial
-        self.turno_actual = Color.BLANCO
-
-        # Agregar el atributo jugador_vs_ia
-        self.jugador_vs_ia = jugador_vs_ia
         
-        # Si el jugador elige negras, hacer primer movimiento de IA
-        if player_color == Color.NEGRO:
-            movimiento_ia = self.maquina.obtener_mejor_movimiento(self.tablero, primer_movimiento=True)
-            if movimiento_ia:
-                pieza_capturada = self.tablero.obtener_pieza(movimiento_ia[0], movimiento_ia[2][0], movimiento_ia[2][1])
-                if pieza_capturada:
-                    if pieza_capturada[1] == Color.BLANCO:
-                        self.piezas_capturadas_blancas.append(pieza_capturada)
-                    else:
-                        self.piezas_capturadas_negras.append(pieza_capturada)
-                self.tablero.realizar_movimiento(movimiento_ia)
-                self.ultimo_movimiento = movimiento_ia
-                self.moverFicha_Sound.play()
-                self.turno_actual = player_color  # Cambiar turno al jugador
-
-        self.movimientos_validos = []
-        self.piezas_capturadas_blancas = []
-        self.piezas_capturadas_negras = []
-        self.ultimo_movimiento = None
-
-
-
-    def manejar_click(self):
-        pos_mouse = pygame.mouse.get_pos()
-        x, y = pos_mouse
-        tablero, fila, columna = self.obtener_casilla_desde_mouse(pos_mouse)
         
-        # Si está fuera del tablero, ignorar el click
-        if tablero is None or not (0 <= fila < 8 and 0 <= columna < 8):
-            # Verificar si se hizo clic en el botón de menú
-            if self.ANCHO - self.boton_menu.get_width() - 10 <= x <= self.ANCHO - 10 and 10 <= y <= 10 + self.boton_menu.get_height():   
-                pygame.mixer.Sound("sonidos/apuntarBoton.wav").play()
-                pygame.mixer.music.pause()
-                self.mostrar_confirmacion()
-                return
-            return
-
-        print(f"Click en tablero {tablero}, fila {fila}, columna {columna}")  # Debug
-
-        # Si no hay pieza seleccionada
-        if self.pieza_seleccionada is None:
-            pieza = self.tablero.obtener_pieza(tablero, fila, columna)
-            if pieza and pieza[1] == self.turno_actual:
-                print(f"Seleccionando pieza: {pieza}")  # Debug
-                self.pieza_seleccionada = (fila, columna)
-                self.tablero_seleccionado = tablero
-                self.movimientos_validos = self.tablero.movimientos_pieza(
-                    pieza[0], (fila, columna), tablero)
-        
-        # Si hay una pieza seleccionada
-        else:
-            desde_fila, desde_col = self.pieza_seleccionada
-            if (fila, columna) in self.movimientos_validos:
-                print(f"Moviendo pieza a {fila}, {columna}")
-                self.moverFicha_Sound.play()
-                self.ultimo_movimiento = (self.tablero_seleccionado, (desde_fila, desde_col), (fila, columna))
-                pieza_capturada = self.tablero.obtener_pieza(tablero, fila, columna)
-                if pieza_capturada:
-                    if pieza_capturada[1] == Color.BLANCO:
-                        self.piezas_capturadas_blancas.append(pieza_capturada)
-                    else:
-                        self.piezas_capturadas_negras.append(pieza_capturada)
-                self.tablero.realizar_movimiento((
-                    self.tablero_seleccionado,
-                    (desde_fila, desde_col),
-                    (fila, columna)
-                ))
-                self.turno_actual = Color.NEGRO if self.turno_actual == Color.BLANCO else Color.BLANCO
-            
-            self.pieza_seleccionada = None
-            self.tablero_seleccionado = None
-            self.movimientos_validos = []
-            
-        
-        self.dibujar_tablero()
-        self.dibujar_piezas()
-        pygame.display.flip()
-
-        # Después de realizar el movimiento del jugador
-        if self.turno_actual == self.maquina.color:
-            # Hacer que la IA realice su movimiento
-            movimiento_ia = self.maquina.obtener_mejor_movimiento(self.tablero)
-            if movimiento_ia:
-                pieza_capturada = self.tablero.obtener_pieza(movimiento_ia[0], movimiento_ia[2][0], movimiento_ia[2][1])
-                if pieza_capturada:
-                    if pieza_capturada[1] == Color.BLANCO:
-                        self.piezas_capturadas_blancas.append(pieza_capturada)
-                    else:
-                        self.piezas_capturadas_negras.append(pieza_capturada)
-                self.tablero.realizar_movimiento(movimiento_ia)
-                self.ultimo_movimiento = movimiento_ia
-                self.moverFicha_Sound.play()
-                self.turno_actual = Color.BLANCO if self.maquina.color == Color.NEGRO else Color.NEGRO
-
-    # Resto del código de la clase Juego permanece igual...
-
     def cargar_imagenes(self):
         try:
             self.imagenes = {}
@@ -375,8 +264,6 @@ class Juego:
             # Verificar si se hizo clic en el botón de menú
             if self.ANCHO - self.boton_menu.get_width() - 10 <= x <= self.ANCHO - 10 and 10 <= y <= 10 + self.boton_menu.get_height():   
                 pygame.mixer.Sound("sonidos/apuntarBoton.wav").play()
-                #pygame.mixer.music.pause()
-                #self.mostrar_confirmacion()
                 menu.menu_configuracion(self)
                 return
             return
@@ -392,7 +279,7 @@ class Juego:
                 self.tablero_seleccionado = tablero
                 self.movimientos_validos = self.tablero.movimientos_pieza(
                     pieza[0], (fila, columna), tablero)
-
+        
         # Si hay una pieza seleccionada
         else:
             desde_fila, desde_col = self.pieza_seleccionada
@@ -406,26 +293,24 @@ class Juego:
                         self.piezas_capturadas_blancas.append(pieza_capturada)
                     else:
                         self.piezas_capturadas_negras.append(pieza_capturada)
-                    
                 self.tablero.realizar_movimiento((
                     self.tablero_seleccionado,
                     (desde_fila, desde_col),
                     (fila, columna)
                 ))
-
-                # Cambiar turno después de que el jugador mueva
                 self.turno_actual = Color.NEGRO if self.turno_actual == Color.BLANCO else Color.BLANCO
-
+            
             self.pieza_seleccionada = None
             self.tablero_seleccionado = None
             self.movimientos_validos = []
-
+            
+        
         self.dibujar_tablero()
         self.dibujar_piezas()
         pygame.display.flip()
 
-        # Después de realizar el movimiento del jugador, verificar si es turno de la IA
-        if self.turno_actual == self.maquina.color and self.jugador_vs_ia:
+        # Después de realizar el movimiento del jugador
+        if self.turno_actual == self.maquina.color:
             # Hacer que la IA realice su movimiento
             movimiento_ia = self.maquina.obtener_mejor_movimiento(self.tablero)
             if movimiento_ia:
@@ -438,9 +323,7 @@ class Juego:
                 self.tablero.realizar_movimiento(movimiento_ia)
                 self.ultimo_movimiento = movimiento_ia
                 self.moverFicha_Sound.play()
-
-                # Cambiar turno después de que la IA mueva
-                self.turno_actual = Color.BLANCO if self.turno_actual == Color.NEGRO else Color.NEGRO
+                self.turno_actual = Color.BLANCO if self.maquina.color == Color.NEGRO else Color.NEGRO
 
 
 

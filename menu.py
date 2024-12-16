@@ -1,6 +1,7 @@
 import pygame
 import sys
 from juego import Juego, Color
+import json
 
 def piece_selection_menu(screen_width=800, screen_height=600):
     # Inicializar pygame
