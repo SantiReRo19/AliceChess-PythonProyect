@@ -1,5 +1,4 @@
 from tablero import Tablero, Pieza, Color  
-
 class MinMax:
     def __init__(self, color, profundidad=3):
         self.color = color  # Color que juega la IA
@@ -75,15 +74,37 @@ class MinMax:
                     break
             return mejor_valor
 
-    def obtener_mejor_movimiento(self, tablero):
+    def obtener_mejor_movimiento(self, tablero, primer_movimiento=False):
         """
-        Encuentra el mejor movimiento usando Minimax con poda alfa-beta
+        Encuentra el mejor movimiento usando Minimax con poda alfa-beta.
+        Si primer_movimiento es True, la IA realiza un movimiento inicial especial.
         """
         mejor_movimiento = None
         mejor_valor = float('-inf')
         alfa = float('-inf')
         beta = float('inf')
+
+        # Si es el primer movimiento, modificar la selección
+        if primer_movimiento:
+            # Estrategia de apertura: mover un peón central
+            movimientos_iniciales = [
+                mov for mov in self.obtener_todos_movimientos(tablero, self.color) 
+                if mov[0] == 1 and mov[1][0] in [1, 6] and mov[1][1] in [3, 4]
+            ]
+            
+            if not movimientos_iniciales:
+                movimientos_iniciales = self.obtener_todos_movimientos(tablero, self.color)
+            
+            for movimiento in movimientos_iniciales:
+                tablero_temp = tablero.copiar_tablero()
+                tablero_temp.realizar_movimiento(movimiento)
+                valor = self.minimax(tablero_temp, self.profundidad - 1, alfa, beta, False)
+                if valor > mejor_valor:
+                    mejor_valor = valor
+                    mejor_movimiento = movimiento
+            return mejor_movimiento
         
+        # Movimiento normal
         for movimiento in self.obtener_todos_movimientos(tablero, self.color):
             tablero_temp = tablero.copiar_tablero()
             tablero_temp.realizar_movimiento(movimiento)
@@ -94,7 +115,7 @@ class MinMax:
                 mejor_movimiento = movimiento
                 
         return mejor_movimiento
-
+    
     def obtener_todos_movimientos(self, tablero, color):
         """
         Obtiene todos los movimientos posibles para un color dado
@@ -109,4 +130,3 @@ class MinMax:
                         for mov in movs:
                             movimientos.append((tablero_num, (fila, columna), mov))
         return movimientos
-

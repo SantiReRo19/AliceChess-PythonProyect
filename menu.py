@@ -1,6 +1,125 @@
 import pygame
 import sys
-from juego import Juego
+from juego import Juego, Color
+
+def piece_selection_menu(screen_width=800, screen_height=600):
+    # Inicializar pygame
+    pygame.init()
+
+    # Configurar pantalla de selección de piezas
+    screen = pygame.display.set_mode((screen_width, screen_height))
+    pygame.display.set_caption("Selección de Piezas - Alice Chess")
+
+    # Cargar fondo
+    background_image = pygame.image.load("imagenes/fondoMenu.png")
+    background_image = pygame.transform.scale(background_image, (screen_width, screen_height))
+
+    # Colores
+    wood_color = (82, 47, 35)
+    hover_color = (210, 135, 50)
+    white = (255, 255, 255)
+
+    # Fuentes
+    font_title = pygame.font.Font(pygame.font.match_font('timesnewroman'), 40)
+    font_button = pygame.font.Font(pygame.font.match_font('timesnewroman'), 20)
+
+    # Cargar imágenes de piezas (asegúrate de tener estas imágenes)
+    piece_images = {
+        'blancas': pygame.image.load("imagenes/piezas_blancas.png"),
+        'negras': pygame.image.load("imagenes/piezas_negras.png")
+    }
+
+    # Dimensiones de los rectángulos
+    rect_width, rect_height = 280, 200
+
+    # Crear rectángulos para selección
+    blancas_rect = pygame.Rect(100, 280, rect_width, rect_height)
+    negras_rect = pygame.Rect(400, 280, rect_width, rect_height)
+
+    # Escalar imágenes de piezas manteniendo relación de aspecto
+    for key in piece_images:
+        img = piece_images[key]
+        img_width, img_height = img.get_width(), img.get_height()
+
+        # Calcular factor de escala
+        scale_factor = min(rect_width / img_width, rect_height / img_height)
+        new_width = int(img_width * scale_factor)
+        new_height = int(img_height * scale_factor)
+
+        # Escalar la imagen
+        piece_images[key] = pygame.transform.scale(img, (new_width, new_height))
+
+    # Variables para seguimiento de estado
+    blancas_hovered = False
+    negras_hovered = False
+    player_color = None
+
+    while True:
+        screen.blit(background_image, (0, 0))
+
+        # Título
+        title_text = font_title.render("Elige tus Piezas", True, white)
+        title_rect = title_text.get_rect(center=(screen_width // 2, 100))
+        screen.blit(title_text, title_rect)
+
+        # Obtener posición del mouse
+        mouse_pos = pygame.mouse.get_pos()
+
+        # Verificar hover
+        blancas_hovered = blancas_rect.collidepoint(mouse_pos)
+        negras_hovered = negras_rect.collidepoint(mouse_pos)
+
+        # Dibujar rectángulos de selección
+        color_blancas = hover_color if blancas_hovered else wood_color
+        color_negras = hover_color if negras_hovered else wood_color
+
+        pygame.draw.rect(screen, color_blancas, blancas_rect)
+        pygame.draw.rect(screen, color_negras, negras_rect)
+
+        # Dibujar imágenes de piezas centradas en los rectángulos
+        for key, rect in zip(['blancas', 'negras'], [blancas_rect, negras_rect]):
+            img = piece_images[key]
+            img_width, img_height = img.get_width(), img.get_height()
+
+            # Calcular posición centrada
+            offset_x = rect.x + (rect_width - img_width) // 2
+            offset_y = rect.y + (rect_height - img_height) // 2
+
+            # Dibujar imagen
+            screen.blit(img, (offset_x, offset_y))
+
+        # Etiquetas
+        blancas_label = font_button.render("Piezas Blancas", True, white)
+        negras_label = font_button.render("Piezas Negras", True, white)
+        
+        screen.blit(blancas_label, (200, 250))
+        screen.blit(negras_label, (500, 250))
+
+        # Manejar eventos
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if blancas_rect.collidepoint(event.pos):
+                    player_color = 'blancas'
+                    break
+                elif negras_rect.collidepoint(event.pos):
+                    player_color = 'negras'
+                    break
+
+        # Salir del bucle si se seleccionó un color
+        if player_color:
+            break
+
+        pygame.display.flip()
+
+    # Iniciar juego con el color seleccionado
+    if player_color:
+        juego = Juego(player_color=Color.BLANCO if player_color == 'blancas' else Color.NEGRO)
+        juego.ejecutar()
+
 
 def main_menu():
     # Inicializar pygame
@@ -92,8 +211,9 @@ def main_menu():
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if play_button_rect.collidepoint(event.pos):
                     play_sound.play()
-                    juego = Juego()
-                    juego.ejecutar()
+                    """ juego = Juego()
+                    juego.ejecutar() """
+                    piece_selection_menu()
                 if quit_button_rect.collidepoint(event.pos):
                     pygame.quit()
                     sys.exit()
