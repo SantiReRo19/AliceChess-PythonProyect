@@ -11,13 +11,19 @@ class Juego:
     def __init__(self):
         os.environ['SDL_VIDEO_CENTERED'] = '1'  # Centra la ventana en la pantalla
 
+        #cargar configuracion con el metodo cargar_configuracion de men
+
+        self.configuracion = menu.cargar_configuracion()
+        self.modificador_tamano = self.configuracion["tamano"]
+        
+
         pygame.init()
-        self.TAMANO_CASILLA = 60
-        self.MARGEN = 40
-        self.ENCABEZADO = 120
-        self.PIEZAS_CAPTURADAS = 160  # Aumentar el tamaño para dos filas de piezas capturadas
-        self.ANCHO = self.TAMANO_CASILLA * 16 + self.MARGEN * 2  # Para dos tableros y márgenes
-        self.ALTO = self.TAMANO_CASILLA * 8 + self.MARGEN * 2 + self.ENCABEZADO + self.PIEZAS_CAPTURADAS
+        self.TAMANO_CASILLA = int(60 * self.modificador_tamano)
+        self.MARGEN = int(40 * self.modificador_tamano)
+        self.ENCABEZADO = int(120 * self.modificador_tamano)  
+        self.PIEZAS_CAPTURADAS = int(160 * self.modificador_tamano)  
+        self.ANCHO = self.TAMANO_CASILLA * 16 + self.MARGEN * 2  # Ajustar ancho para dos tableros y márgenes
+        self.ALTO = self.TAMANO_CASILLA * 8 + self.MARGEN * 2 + self.ENCABEZADO + self.PIEZAS_CAPTURADAS  # Ajustar alto
         self.pantalla = pygame.display.set_mode((self.ANCHO, self.ALTO))
         pygame.display.set_caption('Ajedrez Alice')
         self.tablero = Tablero()
@@ -25,7 +31,7 @@ class Juego:
         self.maquina = MinMax(Color.NEGRO)  # La IA juega con las negras
         self.jugador_vs_ia = True 
         self.boton_menu = pygame.image.load("imagenes/menuIcon.png")
-        self.boton_menu = pygame.transform.scale(self.boton_menu, (30, 30))  # Ajustar tamaño del botón
+        self.boton_menu = pygame.transform.scale(self.boton_menu, (int(30 * self.modificador_tamano), int(30 * self.modificador_tamano)))  # Ajustar tamaño del botón
         
         # Variables para el manejo de movimientos
         self.pieza_seleccionada = None
@@ -39,8 +45,8 @@ class Juego:
         # Sonidos y Musica
         pygame.mixer.init()
 
-        pygame.mixer.music.load("sonidos/musicaFondo.mp3")
-        pygame.mixer.music.set_volume(1.5)
+        pygame.mixer.music.load(self.configuracion["cancion"])
+        pygame.mixer.music.set_volume(self.configuracion["volumen"])
         pygame.mixer.music.play(loops=-1)
         self.moverFicha_Sound = pygame.mixer.Sound("sonidos/moverFicha.wav")
 
@@ -138,7 +144,7 @@ class Juego:
         pygame.draw.line(self.pantalla, color_fondo_indices, (self.TAMANO_CASILLA * 8 + self.MARGEN, self.MARGEN + self.ENCABEZADO), (self.TAMANO_CASILLA * 8 + self.MARGEN, self.ALTO - self.MARGEN - self.PIEZAS_CAPTURADAS), 5)
 
         # Dibujar contorno con índices de posiciones
-        font = pygame.font.SysFont(None, 24)
+        font = pygame.font.SysFont(None, int(24 * self.modificador_tamano))
         letras = 'abcdefgh'
         numeros = '12345678'
 
@@ -158,35 +164,35 @@ class Juego:
             self.pantalla.blit(letra, (i * self.TAMANO_CASILLA + self.TAMANO_CASILLA // 2 - letra.get_width() // 2 + self.TAMANO_CASILLA * 8 + self.MARGEN, self.MARGEN + self.ENCABEZADO - 30))
 
         # Dibujar encabezado
-        font_titulo = pygame.font.Font(pygame.font.match_font('timesnewroman'), 60)
-        font_indicaciones = pygame.font.Font(pygame.font.match_font('timesnewroman'), 30)
-        font_equipo = pygame.font.Font(pygame.font.match_font('timesnewroman'), 20)  # Fuente para el nombre del equipo
+        font_titulo = pygame.font.Font(pygame.font.match_font('timesnewroman'), int(60 * self.modificador_tamano))
+        font_indicaciones = pygame.font.Font(pygame.font.match_font('timesnewroman'), int(30 * self.modificador_tamano))
+        font_equipo = pygame.font.Font(pygame.font.match_font('timesnewroman'), int(20 * self.modificador_tamano))  # Fuente para el nombre del equipo
         titulo = font_titulo.render("Alice Chess", True, color_indices)
-        self.pantalla.blit(titulo, (self.ANCHO // 2 - titulo.get_width() // 2, 20))
+        self.pantalla.blit(titulo, (self.ANCHO // 2 - titulo.get_width() // 2, int(20 * self.modificador_tamano)))
 
         # Dibujar nombre del equipo
-        equipo = font_equipo.render("By JLLS Team", True, color_indices)
-        self.pantalla.blit(equipo, (self.ANCHO // 2 - equipo.get_width() // 2, 90))
+        equipo = font_equipo.render("By LLJS Team", True, color_indices)
+        self.pantalla.blit(equipo, (self.ANCHO // 2 - equipo.get_width() // 2, int(90 * self.modificador_tamano)))
 
         # Dibujar botón de menú en la esquina superior derecha
-        self.pantalla.blit(self.boton_menu, (self.ANCHO - self.boton_menu.get_width() - 10, 10))
+        self.pantalla.blit(self.boton_menu, (self.ANCHO - self.boton_menu.get_width() - 10, int(10 - self.modificador_tamano)))
 
         # Dibujar texto para piezas capturadas
-        font_piezas_capturadas = pygame.font.Font(pygame.font.match_font('timesnewroman'), 24)
+        font_piezas_capturadas = pygame.font.Font(pygame.font.match_font('timesnewroman'), int(24 * self.modificador_tamano))  # Reducir tamaño de fuente en un 20%
         texto_piezas_capturadas_blancas = font_piezas_capturadas.render("Piezas capturadas (Blancas):", True, color_indices)
         texto_piezas_capturadas_negras = font_piezas_capturadas.render("Piezas capturadas (Negras):", True, color_indices)
-        self.pantalla.blit(texto_piezas_capturadas_blancas, (self.MARGEN, self.ALTO - self.PIEZAS_CAPTURADAS + 10))
-        self.pantalla.blit(texto_piezas_capturadas_negras, (self.ANCHO - self.MARGEN - texto_piezas_capturadas_negras.get_width(), self.ALTO - self.PIEZAS_CAPTURADAS + 10))
+        self.pantalla.blit(texto_piezas_capturadas_blancas, (self.MARGEN, self.ALTO - self.PIEZAS_CAPTURADAS + int(10 * self.modificador_tamano)))
+        self.pantalla.blit(texto_piezas_capturadas_negras, (self.ANCHO - self.MARGEN - texto_piezas_capturadas_negras.get_width(), self.ALTO - self.PIEZAS_CAPTURADAS + int(10 * self.modificador_tamano)))
 
-        # Dibujar indicaciones de turno
+        # Dibujar indicaciones de turno entre los textos de piezas capturadas y el tablero
         if self.turno_actual == Color.BLANCO:
             indicaciones = "Mueven blancas"
         else:
             indicaciones = "Mueven negras"
 
         indicaciones_texto = font_indicaciones.render(indicaciones, True, color_indices)
-        self.pantalla.blit(indicaciones_texto, (self.ANCHO // 2 - indicaciones_texto.get_width() // 2, self.ALTO - self.PIEZAS_CAPTURADAS + 10))
-
+        self.pantalla.blit(indicaciones_texto, (self.ANCHO // 2 - indicaciones_texto.get_width() // 2, self.ALTO - self.PIEZAS_CAPTURADAS + int(60 * (self.modificador_tamano / 6 ))))
+        
         # Resaltar casilla seleccionada
         if self.pieza_seleccionada:
             fila, columna = self.pieza_seleccionada
@@ -196,13 +202,13 @@ class Juego:
                             fila * self.TAMANO_CASILLA + self.MARGEN + self.ENCABEZADO,
                             self.TAMANO_CASILLA, self.TAMANO_CASILLA), 3)
 
-        # Resaltar movimientos validod
+        # Resaltar movimientos válidos
         for fila, columna in self.movimientos_validos:
             offset_x = self.MARGEN if self.tablero_seleccionado == 1 else self.TAMANO_CASILLA * 8 + self.MARGEN
             pygame.draw.circle(self.pantalla, (0, 0, 0),
                              (offset_x + columna * self.TAMANO_CASILLA + self.TAMANO_CASILLA // 2,
                               fila * self.TAMANO_CASILLA + self.TAMANO_CASILLA // 2 + self.MARGEN + self.ENCABEZADO),
-                             10)
+                             int(10 * self.modificador_tamano))
 
     def obtener_casilla_desde_mouse(self, pos_mouse):
         x, y = pos_mouse
@@ -229,8 +235,9 @@ class Juego:
             # Verificar si se hizo clic en el botón de menú
             if self.ANCHO - self.boton_menu.get_width() - 10 <= x <= self.ANCHO - 10 and 10 <= y <= 10 + self.boton_menu.get_height():   
                 pygame.mixer.Sound("sonidos/apuntarBoton.wav").play()
-                pygame.mixer.music.pause()
-                self.mostrar_confirmacion()
+                #pygame.mixer.music.pause()
+                #self.mostrar_confirmacion()
+                menu.menu_configuracion(self)
                 return
             return
 
@@ -373,7 +380,7 @@ class Juego:
         self.pantalla.blit(dialogo, (dialogo_x, dialogo_y))
         pygame.display.flip()
     
-        
+    
         while True:
             for evento in pygame.event.get():
                 if evento.type == pygame.QUIT:
@@ -404,5 +411,5 @@ class Juego:
                         self.manejar_click()
 
             self.dibujar_tablero()
-            self.dibujar_piezas()  # Asegurarnos de que se llame a dibujar_piezas
+            self.dibujar_piezas()
             pygame.display.flip()

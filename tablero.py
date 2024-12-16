@@ -24,6 +24,7 @@ class Tablero:
             Color.NEGRO: {'kingside': False, 'queenside': False}
         }
         self.inicializar_tablero()
+    
     def realizar_movimiento(self, movimiento):
         tablero_origen, desde_pos, hasta_pos = movimiento
         desde_fila, desde_col = desde_pos
@@ -165,6 +166,11 @@ class Tablero:
                     pieza_destino = self.obtener_pieza(tablero_num, fila + direccion, columna + dc)
                     if pieza_destino and pieza_destino[1] != color_actual:
                         movimientos_captura.append((fila + direccion, columna + dc))
+
+            
+
+                
+
                         
         elif tipo_pieza == Pieza.CABALLO:
             movimientos_caballo = [
