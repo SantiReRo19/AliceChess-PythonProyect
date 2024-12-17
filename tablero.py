@@ -43,6 +43,7 @@ class Tablero:
         # Verificar si es una captura
         pieza_destino = self.obtener_pieza(tablero_origen, hasta_fila, hasta_col)
         es_captura = pieza_destino is not None and pieza_destino[1] != pieza[1]
+       
         
         # Verificar si es enroque
         es_enroque = (pieza[0] == Pieza.REY and abs(desde_col - hasta_col) == 2)
@@ -55,28 +56,30 @@ class Tablero:
                 # Mover la torre
                 if hasta_col == 6:  # Enroque corto
                     self.tablero1[desde_fila][7] = None
-                    self.tablero1[desde_fila][5] = (Pieza.TORRE, pieza[1])
+                    self.tablero2[desde_fila][5] = (Pieza.TORRE, pieza[1])
                 else:  # Enroque largo
                     self.tablero1[desde_fila][0] = None
-                    self.tablero1[desde_fila][3] = (Pieza.TORRE, pieza[1])
+                    self.tablero2[desde_fila][3] = (Pieza.TORRE, pieza[1])
             else:
                 self.tablero2[desde_fila][desde_col] = None
                 self.tablero2[hasta_fila][hasta_col] = pieza
                 # Mover la torre
                 if hasta_col == 6:  # Enroque corto
                     self.tablero2[desde_fila][7] = None
-                    self.tablero2[desde_fila][5] = (Pieza.TORRE, pieza[1])
+                    self.tablero1[desde_fila][5] = (Pieza.TORRE, pieza[1])
                 else:  # Enroque largo
                     self.tablero2[desde_fila][0] = None
-                    self.tablero2[desde_fila][3] = (Pieza.TORRE, pieza[1])
+                    self.tablero1[desde_fila][3] = (Pieza.TORRE, pieza[1])
         elif es_captura:
             # Realizar captura en el mismo tablero
             if tablero_origen == 1:
                 self.tablero1[desde_fila][desde_col] = None
-                self.tablero1[hasta_fila][hasta_col] = pieza
+                self.tablero2[hasta_fila][hasta_col] = pieza
+                self.tablero1[hasta_fila][hasta_col] = None
             else:
                 self.tablero2[desde_fila][desde_col] = None
-                self.tablero2[hasta_fila][hasta_col] = pieza
+                self.tablero1[hasta_fila][hasta_col] = pieza
+                self.tablero2[hasta_fila][hasta_col] = None
         else:
             # Movimiento normal al tablero opuesto
             if tablero_origen == 1:
@@ -140,7 +143,9 @@ class Tablero:
         else:
             return self.tablero2[fila][columna]
 
+
     def movimientos_pieza(self, tipo_pieza, pos, tablero_num):
+        
         fila, columna = pos
         movimientos = []
         movimientos_captura = []  # Lista separada para movimientos de captura
