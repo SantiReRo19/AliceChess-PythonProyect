@@ -38,9 +38,7 @@ class Tablero:
         # Verificar si es una captura
         pieza_destino = self.obtener_pieza(tablero_origen, hasta_fila, hasta_col)
         es_captura = pieza_destino is not None and pieza_destino[1] != pieza[1]
-        if es_captura:
-            print(pieza_destino)
-            print(es_captura)
+       
         
         # Verificar si es enroque
         es_enroque = (pieza[0] == Pieza.REY and abs(desde_col - hasta_col) == 2)
@@ -193,7 +191,6 @@ class Tablero:
                             movimientos.append((nueva_fila, nueva_col))
                     elif pieza_destino[1] != color_actual:
                         # Captura en el mismo tablero
-                        print("captura")
                         movimientos_captura.append((nueva_fila, nueva_col))
 
         elif tipo_pieza in [Pieza.ALFIL, Pieza.TORRE, Pieza.DAMA]:
