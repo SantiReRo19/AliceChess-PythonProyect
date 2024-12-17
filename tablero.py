@@ -23,8 +23,12 @@ class Tablero:
             Color.BLANCO: {'kingside': False, 'queenside': False},
             Color.NEGRO: {'kingside': False, 'queenside': False}
         }
+        self.posicion_rey_blancas = [4,7,1]
+        self.posicion_rey_negras = [4,0,1]
         self.inicializar_tablero()
     
+    
+
     def realizar_movimiento(self, movimiento):
         tablero_origen, desde_pos, hasta_pos = movimiento
         desde_fila, desde_col = desde_pos
@@ -34,6 +38,7 @@ class Tablero:
         pieza = self.obtener_pieza(tablero_origen, desde_fila, desde_col)
         if not pieza:
             return False
+            
             
         # Verificar si es una captura
         pieza_destino = self.obtener_pieza(tablero_origen, hasta_fila, hasta_col)
@@ -84,7 +89,9 @@ class Tablero:
         # Actualizar historial y estado de piezas especiales
         self.historial_movimientos.append((tablero_origen, desde_pos, hasta_pos))
         if pieza[0] == Pieza.REY:
+            
             self.reyes_movidos[pieza[1]] = True
+            #print(self.reyes_movidos)
         elif pieza[0] == Pieza.TORRE:
             if desde_col == 0:
                 self.torres_movidas[pieza[1]]['queenside'] = True
@@ -166,11 +173,6 @@ class Tablero:
                     pieza_destino = self.obtener_pieza(tablero_num, fila + direccion, columna + dc)
                     if pieza_destino and pieza_destino[1] != color_actual:
                         movimientos_captura.append((fila + direccion, columna + dc))
-
-            
-
-                
-
                         
         elif tipo_pieza == Pieza.CABALLO:
             movimientos_caballo = [
@@ -355,3 +357,6 @@ class Tablero:
                     return True
 
         return False
+
+
+

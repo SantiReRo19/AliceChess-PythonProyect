@@ -261,7 +261,8 @@ class Juego:
         
         # Si está fuera del tablero, ignorar el click
         if tablero is None or not (0 <= fila < 8 and 0 <= columna < 8):
-            # Verificar si se hizo clic en el botón de menú
+
+            # Boton Menú
             if self.ANCHO - self.boton_menu.get_width() - 10 <= x <= self.ANCHO - 10 and 10 <= y <= 10 + self.boton_menu.get_height():   
                 pygame.mixer.Sound("sonidos/apuntarBoton.wav").play()
                 menu.menu_configuracion(self)
@@ -277,6 +278,9 @@ class Juego:
                 print(f"Seleccionando pieza: {pieza}")  # Debug
                 self.pieza_seleccionada = (fila, columna)
                 self.tablero_seleccionado = tablero
+
+                print(pieza[0])
+
                 self.movimientos_validos = self.tablero.movimientos_pieza(
                     pieza[0], (fila, columna), tablero)
         
@@ -284,6 +288,17 @@ class Juego:
         else:
             desde_fila, desde_col = self.pieza_seleccionada
             if (fila, columna) in self.movimientos_validos:
+                
+                # Verificar si el REY se movió
+                pieza = self.tablero.obtener_pieza(self.tablero_seleccionado, self.pieza_seleccionada[0], self.pieza_seleccionada[1])
+                if pieza[0] == Pieza.REY:
+                    if tablero == 1:
+                        self.tablero.posicion_rey_blancas = (fila, columna, 2)
+                        print(self.tablero.posicion_rey_blancas)
+                    else:
+                        self.tablero.posicion_rey_negras = (fila, columna, 1)
+                        print(self.tablero.posicion_rey_negras)
+
                 print(f"Moviendo pieza a {fila}, {columna}")
                 self.moverFicha_Sound.play()
                 self.ultimo_movimiento = (self.tablero_seleccionado, (desde_fila, desde_col), (fila, columna))
@@ -299,6 +314,10 @@ class Juego:
                     (fila, columna)
                 ))
                 self.turno_actual = Color.NEGRO if self.turno_actual == Color.BLANCO else Color.BLANCO
+                fila_rey, columna_rey, tablero_rey = self.tablero.posicion_rey_blancas
+                
+                if self.tablero.esta_en_jaque(fila_rey, columna_rey, tablero_rey) == True:
+                    print("Jaque")
             
             self.pieza_seleccionada = None
             self.tablero_seleccionado = None
@@ -313,17 +332,37 @@ class Juego:
         if self.turno_actual == self.maquina.color:
             # Hacer que la IA realice su movimiento
             movimiento_ia = self.maquina.obtener_mejor_movimiento(self.tablero)
+            print(movimiento_ia)
+
+            # Verificar si el REY se movió
+
             if movimiento_ia:
                 pieza_capturada = self.tablero.obtener_pieza(movimiento_ia[0], movimiento_ia[2][0], movimiento_ia[2][1])
+
+                pieza = self.tablero.obtener_pieza(movimiento_ia[0], movimiento_ia[1][0], movimiento_ia[1][1])
+
+                if pieza[0] == Pieza.REY:
+                    if tablero == 1:
+                        self.tablero.posicion_rey_blancas = (fila, columna, 2)
+                        
+                    else:
+                        self.tablero.posicion_rey_negras = (fila, columna, 1)
+
                 if pieza_capturada:
                     if pieza_capturada[1] == Color.BLANCO:
                         self.piezas_capturadas_blancas.append(pieza_capturada)
                     else:
                         self.piezas_capturadas_negras.append(pieza_capturada)
+
                 self.tablero.realizar_movimiento(movimiento_ia)
                 self.ultimo_movimiento = movimiento_ia
+                pieza = self.tablero.obtener_pieza(movimiento_ia[0], movimiento_ia[2][0], movimiento_ia[2][1])
                 self.moverFicha_Sound.play()
                 self.turno_actual = Color.BLANCO if self.maquina.color == Color.NEGRO else Color.NEGRO
+                fila_rey, columna_rey, tablero_rey = self.tablero.posicion_rey_blancas
+                
+                if self.tablero.esta_en_jaque(fila_rey, columna_rey, tablero_rey) == True:
+                    print("Jaque")
 
 
 
