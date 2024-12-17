@@ -14,7 +14,7 @@ class Juego:
 
         self.configuracion = menu.cargar_configuracion()
         self.modificador_tamano = self.configuracion["tamano"]
-        
+        self.ganador = None 
 
         pygame.init()
         self.TAMANO_CASILLA = int(60 * self.modificador_tamano)
@@ -322,6 +322,15 @@ class Juego:
                 
                 if self.tablero.esta_en_jaque(fila_rey, columna_rey, tablero_rey) == True:
                     print("Jaque")
+                if self.verificar_victoria():
+                    color, motivo = self.ganador
+                    if color == "Negras":
+                        self.mostrar_mensaje_victoria()
+                        
+                    else:
+                        self.mostrar_mensaje_victoria()
+            
+                    return
             
             self.pieza_seleccionada = None
             self.tablero_seleccionado = None
@@ -367,6 +376,88 @@ class Juego:
                 if self.tablero.esta_en_jaque(fila_rey, columna_rey, tablero_rey) == True:
                     print("Jaque")
 
+    def verificar_victoria(self):
+        # Verificar si algún rey ha sido capturado
+        reyes_blancos = self.contar_reyes(Color.BLANCO)
+        reyes_negros = self.contar_reyes(Color.NEGRO)
+        
+        if reyes_blancos == 0:
+            self.mostrar_mensaje_victoria()
+            self.ganador = ("Negras", "captura")
+            return True
+        elif reyes_negros == 0:
+            self.mostrar_mensaje_victoria()
+            self.ganador = ("Blancas", "captura")
+            return True
+        
+        # Verificar jaque
+        for tablero_num in [1, 2]:
+            for fila in range(8):
+                for columna in range(8):
+                    pieza = self.tablero.obtener_pieza(tablero_num, fila, columna)
+                    if pieza and pieza[0] == Pieza.REY:
+                        if self.tablero.esta_en_jaque(fila, columna, tablero_num):
+                            if pieza[1] == Color.BLANCO:
+                                self.ganador = ("Negras", "jaque")
+                                return True
+                            else:
+                                self.ganador = ("Blancas", "jaque")
+                                return True
+        return False
+        
+    def contar_reyes(self, color):
+        """Cuenta cuántos reyes """
+        contador = 0
+        for tablero_num in [1, 2]:
+            for fila in range(8):
+                for columna in range(8):
+                    pieza = self.tablero.obtener_pieza(tablero_num, fila, columna)
+                    if pieza and pieza[0] == Pieza.REY and pieza[1] == color:
+                        contador += 1
+        return contador
+        
+
+    def mostrar_mensaje_victoria(self):
+        # Crear una superficie para el cuadro de diálogo
+        dialogo_ancho = 600
+        dialogo_alto = 200
+        dialogo = pygame.Surface((dialogo_ancho, dialogo_alto))
+        dialogo.set_alpha(200)
+        dialogo.fill((0, 0, 0))
+
+        font = pygame.font.Font(None, 36)
+        texto = font.render(f"¡{self.ganador[0]} han ganado por {self.ganador[1]}!", True, (255, 255, 255))
+        texto_rect = texto.get_rect(center=(dialogo_ancho // 2, 50))
+        dialogo.blit(texto, texto_rect)
+
+        # Crear botón para volver al menú
+        boton_ancho = 200
+        boton_alto = 50
+        boton_menu = pygame.Rect(dialogo_ancho // 2 - boton_ancho // 2, 120, boton_ancho, boton_alto)
+        pygame.draw.rect(dialogo, (0, 255, 0), boton_menu)
+        texto_menu = font.render("Volver al menú", True, (0, 0, 0))
+        dialogo.blit(texto_menu, texto_menu.get_rect(center=boton_menu.center))
+
+        # Centrar el cuadro de diálogo
+        dialogo_x = self.ANCHO // 2 - dialogo_ancho // 2
+        dialogo_y = self.ALTO // 2 - dialogo_alto // 2
+        self.pantalla.blit(dialogo, (dialogo_x, dialogo_y))
+        pygame.display.flip()
+
+        while True:
+            for evento in pygame.event.get():
+                if evento.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif evento.type == pygame.MOUSEBUTTONDOWN:
+                    clic_x, clic_y = evento.pos
+                    # Ajustar las coordenadas del clic para la posición del cuadro de diálogo
+                    clic_x -= dialogo_x
+                    clic_y -= dialogo_y
+                    if boton_menu.collidepoint((clic_x, clic_y)):
+                        pygame.mixer.Sound("sonidos/apuntarBoton.wav").play()
+                        menu.main_menu()
+                        return
 
 
     def dibujar_piezas(self):

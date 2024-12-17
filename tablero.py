@@ -112,8 +112,8 @@ class Tablero:
         # Inicializar piezas negras
         self.tablero1[0] = [
             (Pieza.TORRE, Color.NEGRO), (Pieza.CABALLO, Color.NEGRO),
-            (Pieza.ALFIL, Color.NEGRO), (Pieza.DAMA, Color.NEGRO),
-            (Pieza.REY, Color.NEGRO), (Pieza.ALFIL, Color.NEGRO),
+            (Pieza.ALFIL, Color.NEGRO), (Pieza.REY, Color.NEGRO),
+            (Pieza.DAMA, Color.NEGRO), (Pieza.ALFIL, Color.NEGRO),
             (Pieza.CABALLO, Color.NEGRO), (Pieza.TORRE, Color.NEGRO)
         ]
         for i in range(8):
@@ -122,8 +122,8 @@ class Tablero:
         # Inicializar piezas blancas
         self.tablero1[7] = [
             (Pieza.TORRE, Color.BLANCO), (Pieza.CABALLO, Color.BLANCO),
-            (Pieza.ALFIL, Color.BLANCO), (Pieza.DAMA, Color.BLANCO),
-            (Pieza.REY, Color.BLANCO), (Pieza.ALFIL, Color.BLANCO),
+            (Pieza.ALFIL, Color.BLANCO), (Pieza.REY, Color.BLANCO),
+            (Pieza.DAMA, Color.BLANCO), (Pieza.ALFIL, Color.BLANCO),
             (Pieza.CABALLO, Color.BLANCO), (Pieza.TORRE, Color.BLANCO)
         ]
         for i in range(8):

@@ -1,0 +1,45 @@
+    def inicializar_tablero(self):
+        # Limpiar ambos tableros
+        self.tablero1 = [[None for _ in range(8)] for _ in range(8)]
+        self.tablero2 = [[None for _ in range(8)] for _ in range(8)]
+        
+        # Tablero 1: Posición del rey negro vulnerable
+        self.tablero1[7][7] = (Pieza.REY, Color.NEGRO)  # Rey negro en h8
+        self.tablero1[6][6] = (Pieza.PEON, Color.NEGRO)  # Peón negro bloqueando g7
+        
+        # Tablero 2: Torre blanca lista para transportarse
+        self.tablero2[6][6] = (Pieza.TORRE, Color.BLANCO)  # Torre blanca en g7 (tablero2)
+        
+        # Tablero 2: Colocar rey blanco como soporte
+        self.tablero2[4][4] = (Pieza.REY, Color.BLANCO)  # Rey blanco en e5
+
+
+    def inicializar_tablero(self):
+        # Inicializar piezas negras
+        self.tablero1[0] = [
+            (Pieza.TORRE, Color.NEGRO), (Pieza.CABALLO, Color.NEGRO),
+            (Pieza.ALFIL, Color.NEGRO), (Pieza.REY, Color.NEGRO),
+            (Pieza.DAMA, Color.NEGRO), (Pieza.ALFIL, Color.NEGRO),
+            (Pieza.CABALLO, Color.NEGRO), (Pieza.TORRE, Color.NEGRO)
+        ]
+        for i in range(8):
+            self.tablero1[1][i] = (Pieza.PEON, Color.NEGRO)
+        
+        # Colocamos el peón negro en la fila 5, columna 4 (frente al rey blanco)
+        self.tablero1[6][4] = (Pieza.PEON, Color.NEGRO)
+
+        # Colocamos la torre negra en la fila 4, columna 4
+        self.tablero1[4][4] = (Pieza.TORRE, Color.NEGRO)
+
+        # Inicializar piezas blancas
+        self.tablero1[7] = [
+            (Pieza.TORRE, Color.BLANCO), (Pieza.CABALLO, Color.BLANCO),
+            (Pieza.ALFIL, Color.BLANCO), (Pieza.REY, Color.BLANCO),
+            (Pieza.DAMA, Color.BLANCO), (Pieza.ALFIL, Color.BLANCO),
+            (Pieza.CABALLO, Color.BLANCO), (Pieza.TORRE, Color.BLANCO)
+        ]
+        for i in range(8):
+            self.tablero1[6][i] = (Pieza.PEON, Color.BLANCO)
+        
+        # Colocamos el rey blanco en la fila 7, columna 4
+        self.tablero1[7][4] = (Pieza.REY, Color.BLANCO)

@@ -40,9 +40,42 @@ class MinMax:
                             centro_fila = 3.5 - abs(3.5 - fila)
                             centro_col = 3.5 - abs(3.5 - columna)
                             valor += (centro_fila + centro_col) * 10 * multiplicador
-        
-        return valor
+                        # Bonificaciones adicionales para el peón
+                        if pieza[0] == Pieza.PEON:
+                            # Penalización por peones doblados
+                            peones_columna = sum(1 for f in range(8) 
+                                              if tablero.obtener_pieza(tablero_num, f, columna) == pieza)
+                            if peones_columna > 1:
+                                valor -= 20 * multiplicador
+                            
+                            # Penalización por peones aislados
+                            peones_adyacentes = False
+                            for c in [columna-1, columna+1]:
+                                if 0 <= c < 8:
+                                    for f in range(8):
+                                        if tablero.obtener_pieza(tablero_num, f, c) == pieza:
+                                            peones_adyacentes = True
+                                            break
+                            if not peones_adyacentes:
+                                valor -= 30 * multiplicador
 
+        # Rey en jaque
+        for tablero_num in [1, 2]:
+            rey_encontrado = False
+            for fila in range(8):
+                for columna in range(8):
+                    pieza = tablero.obtener_pieza(tablero_num, fila, columna)
+                    if pieza and pieza[0] == Pieza.REY and pieza[1] == self.color:
+                        rey_encontrado = True
+                    
+                        if tablero.esta_en_jaque(fila, columna, tablero_num):
+                            valor -= 100
+                        break
+                if rey_encontrado:
+                    break
+                    
+        return valor
+   
     def minimax(self, tablero, profundidad, alfa, beta, es_maximizador):
         """
         Implementación del algoritmo Minimax con poda alfa-beta
