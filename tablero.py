@@ -23,8 +23,8 @@ class Tablero:
             Color.BLANCO: {'kingside': False, 'queenside': False},
             Color.NEGRO: {'kingside': False, 'queenside': False}
         }
-        self.posicion_rey_blancas = [4,7,1]
-        self.posicion_rey_negras = [4,0,1]
+        self.posicion_rey_blancas = [7,4,1]
+        self.posicion_rey_negras = [0,4,1]
         self.inicializar_tablero()
     
     
@@ -94,6 +94,11 @@ class Tablero:
         if pieza[0] == Pieza.REY:
             
             self.reyes_movidos[pieza[1]] = True
+            if pieza[1] == Color.BLANCO:
+                self.posicion_rey_blancas = [hasta_fila, hasta_col, tablero_origen]
+            else:
+                self.posicion_rey_negras = [hasta_fila, hasta_col, tablero_origen]
+
             #print(self.reyes_movidos)
         elif pieza[0] == Pieza.TORRE:
             if desde_col == 0:
@@ -143,9 +148,7 @@ class Tablero:
         else:
             return self.tablero2[fila][columna]
 
-
     def movimientos_pieza(self, tipo_pieza, pos, tablero_num):
-        
         fila, columna = pos
         movimientos = []
         movimientos_captura = []  # Lista separada para movimientos de captura
@@ -155,7 +158,7 @@ class Tablero:
             return movimientos
             
         color_actual = pieza_actual[1]
-        
+    
         if tipo_pieza == Pieza.PEON:
             direccion = -1 if color_actual == Color.BLANCO else 1
             
@@ -165,19 +168,23 @@ class Tablero:
                     # Verificar tablero espejo para movimientos normales
                     tablero_espejo = 2 if tablero_num == 1 else 1
                     if self.obtener_pieza(tablero_espejo, fila + direccion, columna) is None:
-                        movimientos.append((fila + direccion, columna))
+                        if not self.simular_movimiento_y_verificar_jaque(tablero_num, fila, columna, (fila + direccion, columna), self.posicion_rey_blancas[0], self.posicion_rey_blancas[1]):
+                            movimientos.append((fila + direccion, columna))
+    
                         # Movimiento doble inicial
                         if (direccion == -1 and fila == 6) or (direccion == 1 and fila == 1):
                             if self.obtener_pieza(tablero_num, fila + 2*direccion, columna) is None:
                                 if self.obtener_pieza(tablero_espejo, fila + 2*direccion, columna) is None:
-                                    movimientos.append((fila + 2*direccion, columna))
+                                    if not self.simular_movimiento_y_verificar_jaque(tablero_num, fila, columna, (fila + 2*direccion, columna), self.posicion_rey_blancas[0], self.posicion_rey_blancas[1]):
+                                        movimientos.append((fila + 2*direccion, columna))
             
             # Capturas diagonales (en el mismo tablero)
             for dc in [-1, 1]:
                 if 0 <= fila + direccion < 8 and 0 <= columna + dc < 8:
                     pieza_destino = self.obtener_pieza(tablero_num, fila + direccion, columna + dc)
                     if pieza_destino and pieza_destino[1] != color_actual:
-                        movimientos_captura.append((fila + direccion, columna + dc))
+                        if not self.simular_movimiento_y_verificar_jaque(tablero_num, fila, columna, (fila + direccion, columna + dc), self.posicion_rey_blancas[0], self.posicion_rey_blancas[1]):
+                            movimientos_captura.append((fila + direccion, columna + dc))
                         
         elif tipo_pieza == Pieza.CABALLO:
             movimientos_caballo = [
@@ -194,11 +201,13 @@ class Tablero:
                         # Verificar tablero espejo para movimientos normales
                         tablero_espejo = 2 if tablero_num == 1 else 1
                         if self.obtener_pieza(tablero_espejo, nueva_fila, nueva_col) is None:
-                            movimientos.append((nueva_fila, nueva_col))
+                            if not self.simular_movimiento_y_verificar_jaque(tablero_num, fila, columna, (nueva_fila, nueva_col), self.posicion_rey_blancas[0], self.posicion_rey_blancas[1]):
+                                movimientos.append((nueva_fila, nueva_col))
                     elif pieza_destino[1] != color_actual:
                         # Captura en el mismo tablero
-                        movimientos_captura.append((nueva_fila, nueva_col))
-
+                        if not self.simular_movimiento_y_verificar_jaque(tablero_num, fila, columna, (nueva_fila, nueva_col), self.posicion_rey_blancas[0], self.posicion_rey_blancas[1]):
+                            movimientos_captura.append((nueva_fila, nueva_col))
+    
         elif tipo_pieza in [Pieza.ALFIL, Pieza.TORRE, Pieza.DAMA]:
             direcciones = []
             if tipo_pieza in [Pieza.ALFIL, Pieza.DAMA]:
@@ -214,16 +223,18 @@ class Tablero:
                         # Verificar tablero espejo para movimientos normales
                         tablero_espejo = 2 if tablero_num == 1 else 1
                         if self.obtener_pieza(tablero_espejo, nueva_fila, nueva_col) is None:
-                            movimientos.append((nueva_fila, nueva_col))
+                            if not self.simular_movimiento_y_verificar_jaque(tablero_num, fila, columna, (nueva_fila, nueva_col), self.posicion_rey_blancas[0], self.posicion_rey_blancas[1]):
+                                movimientos.append((nueva_fila, nueva_col))
                     elif pieza_destino[1] != color_actual:
                         # Captura en el mismo tablero
-                        movimientos_captura.append((nueva_fila, nueva_col))
+                        if not self.simular_movimiento_y_verificar_jaque(tablero_num, fila, columna, (nueva_fila, nueva_col), self.posicion_rey_blancas[0], self.posicion_rey_blancas[1]):
+                            movimientos_captura.append((nueva_fila, nueva_col))
                         break
                     else:
                         break
                     nueva_fila += dir_f
                     nueva_col += dir_c
-
+    
         elif tipo_pieza == Pieza.REY:
             # Movimientos básicos del rey (una casilla en cualquier dirección)
             direcciones = [
@@ -244,11 +255,11 @@ class Tablero:
                         tablero_espejo = 2 if tablero_num == 1 else 1
                         if self.obtener_pieza(tablero_espejo, nueva_fila, nueva_col) is None:
                             # Verificar que el movimiento no ponga al rey en jaque
-                            if not self.esta_casilla_bajo_ataque(nueva_fila, nueva_col, tablero_num, color_actual):
+                            if not self.simular_movimiento_y_verificar_jaque(tablero_num, fila, columna, (nueva_fila, nueva_col), self.posicion_rey_blancas[0], self.posicion_rey_blancas[1]):
                                 movimientos.append((nueva_fila, nueva_col))
                     elif pieza_destino[1] != color_actual:
                         # Captura en el mismo tablero
-                        if not self.esta_casilla_bajo_ataque(nueva_fila, nueva_col, tablero_num, color_actual):
+                        if not self.simular_movimiento_y_verificar_jaque(tablero_num, fila, columna, (nueva_fila, nueva_col), self.posicion_rey_blancas[0], self.posicion_rey_blancas[1]):
                             movimientos_captura.append((nueva_fila, nueva_col))
             
             # Verificar enroque si el rey no se ha movido
@@ -304,6 +315,119 @@ class Tablero:
             
         color_rey = pieza[1]
         return self.esta_casilla_bajo_ataque(fila, columna, tablero_num, color_rey)
+
+    def es_jaque_mate(self, fila, columna, tablero_num):
+        """
+        Verifica si el rey en la posición dada está en jaque mate.
+        Parámetros:
+            fila (int): Fila actual del rey.
+            columna (int): Columna actual del rey.
+            tablero_num (int): Tablero actual.
+        """
+        # 1. Verificar si el rey está en jaque
+        if not self.esta_en_jaque(fila, columna, tablero_num):
+            return False  # Si no está en jaque, no puede ser jaque mate
+
+        # 2. Obtener movimientos legales del rey
+        movimientos_legales_rey = self.movimientos_pieza(Pieza.REY, (fila, columna), tablero_num)
+
+        # Verificar si hay algún movimiento donde el rey pueda escapar del jaque
+        for movimiento in movimientos_legales_rey:
+            nueva_fila, nueva_columna = movimiento
+            # Simular el movimiento del rey a una casilla y verificar si sigue en jaque
+            if not self.esta_casilla_bajo_ataque(nueva_fila, nueva_columna, tablero_num, self.obtener_pieza(tablero_num, fila, columna)[1]):
+                return False  # Si encuentra una casilla segura, no es jaque mate
+
+        # 3. Verificar si alguna otra pieza puede proteger al rey
+        for pieza in self.obtener_todas_las_piezas(tablero_num, self.obtener_pieza(tablero_num, fila, columna)[1]):
+            pieza_fila, pieza_columna = pieza['posicion']
+            movimientos_pieza = self.movimientos_pieza(tablero_num, pieza_fila, pieza_columna)
+            for movimiento in movimientos_pieza:
+                # Simular el movimiento de la pieza para ver si el rey sale del jaque
+                if self.simular_movimiento_y_verificar_jaque(tablero_num, pieza_fila, pieza_columna, movimiento, fila, columna):
+                    return False  # Si alguna pieza puede salvar al rey, no es jaque mate
+
+        # Si no hay movimientos legales para el rey ni ninguna pieza puede protegerlo, es jaque mate
+        return True
+
+    def simular_movimiento_y_verificar_jaque(self, tablero_num, pieza_fila, pieza_columna, destino, fila_rey, columna_rey):
+        """
+        Simula un movimiento de una pieza y verifica si el rey sigue en jaque.
+        
+        Parámetros:
+            tablero_num (int): Identificador del tablero actual.
+            pieza_fila (int): Fila actual de la pieza que se mueve.
+            pieza_columna (int): Columna actual de la pieza que se mueve.
+            destino (tuple): Tupla con la fila y columna destino (nueva posición).
+            fila_rey (int): Fila actual del rey.
+            columna_rey (int): Columna actual del rey.
+            
+        Retorna:
+            bool: True si el rey sigue en jaque después del movimiento simulado, False si no.
+        """
+        # Guardar el estado inicial de las casillas involucradas
+
+        #if tablero_num == 1:
+        pieza_origen = self.tablero1[pieza_fila][pieza_columna]
+        pieza_destino = self.tablero1[destino[0]][destino[1]]
+        
+        # Simular el movimiento
+        self.tablero1[pieza_fila][pieza_columna] = None  # Eliminar pieza de origen
+        self.tablero1[destino[0]][destino[1]] = pieza_origen  # Colocar pieza en destino
+
+        pieza = self.obtener_pieza(tablero_num, pieza_fila, pieza_columna)
+
+        rey_en_jaque = False
+
+        print(f"Destino {destino}")
+
+        if pieza is not None:
+
+            if pieza[0] == Pieza.REY:
+                if pieza[1] == Color.BLANCO:
+                    self.posicion_rey_blancas = [destino[0], destino[1], tablero_num]
+                    
+                    print("")
+                    print(self.posicion_rey_blancas)
+                    rey_en_jaque = self.esta_en_jaque(self.posicion_rey_blancas[0], self.posicion_rey_blancas[1], tablero_num)
+                else:
+                    self.posicion_rey_negras = [destino[0], destino[1], tablero_num]
+                    rey_en_jaque = self.esta_en_jaque(self.posicion_rey_negras[0], self.posicion_rey_negras[1], tablero_num)
+            else:
+                rey_en_jaque = self.esta_en_jaque(fila_rey, columna_rey, tablero_num)
+    
+        # Revertir el estado del tablero
+        self.tablero1[pieza_fila][pieza_columna] = pieza_origen  # Restaurar pieza en origen
+        self.tablero1[destino[0]][destino[1]] = pieza_destino  # Restaurar pieza en destino
+        #Revertir la posición del rey
+        if pieza is not None:
+            if pieza[0] == Pieza.REY:
+                if pieza[1] == Color.BLANCO:
+                    self.posicion_rey_blancas = [pieza_fila, pieza_columna, tablero_num]
+                else:
+                    self.posicion_rey_negras = [pieza_fila, pieza_columna, tablero_num]
+
+        return rey_en_jaque
+        """
+        else:
+            pieza_origen = self.tablero2[pieza_fila][pieza_columna]
+            pieza_destino = self.tablero2[destino[0]][destino[1]]
+            
+            # Simular el movimiento
+            self.tablero2[pieza_fila][pieza_columna] = None
+            self.tablero2[destino[0]][destino[1]] = pieza_origen
+
+            try:
+                # Verificar si el rey sigue en jaque después del movimiento
+                rey_en_jaque = self.esta_en_jaque(fila_rey, columna_rey, tablero_num)
+                print(fila_rey, columna_rey, tablero_num)
+
+            finally:
+                # Revertir el estado del tablero
+                self.tablero2[pieza_fila][pieza_columna] = pieza_origen
+                self.tablero2[destino[0]][destino[1]] = pieza_destino
+        """
+
 
     def esta_casilla_bajo_ataque(self, fila, columna, tablero_num, color_defensor):
         """

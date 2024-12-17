@@ -281,6 +281,8 @@ class Juego:
 
                 print(pieza[0])
 
+                print(self.tablero.posicion_rey_blancas)
+
                 self.movimientos_validos = self.tablero.movimientos_pieza(
                     pieza[0], (fila, columna), tablero)
         
@@ -316,6 +318,8 @@ class Juego:
                 self.turno_actual = Color.NEGRO if self.turno_actual == Color.BLANCO else Color.BLANCO
                 fila_rey, columna_rey, tablero_rey = self.tablero.posicion_rey_blancas
                 
+                print(self.tablero.posicion_rey_blancas)
+                
                 if self.tablero.esta_en_jaque(fila_rey, columna_rey, tablero_rey) == True:
                     print("Jaque")
             
@@ -332,7 +336,6 @@ class Juego:
         if self.turno_actual == self.maquina.color:
             # Hacer que la IA realice su movimiento
             movimiento_ia = self.maquina.obtener_mejor_movimiento(self.tablero)
-            print(movimiento_ia)
 
             # Verificar si el REY se movió
 
@@ -360,7 +363,7 @@ class Juego:
                 self.moverFicha_Sound.play()
                 self.turno_actual = Color.BLANCO if self.maquina.color == Color.NEGRO else Color.NEGRO
                 fila_rey, columna_rey, tablero_rey = self.tablero.posicion_rey_blancas
-                
+
                 if self.tablero.esta_en_jaque(fila_rey, columna_rey, tablero_rey) == True:
                     print("Jaque")
 
